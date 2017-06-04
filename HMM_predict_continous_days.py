@@ -9,7 +9,7 @@ import time
 
 
 class ModelHMM():
-    def __init__(self, company, day_start, day_end, n_days_previous, n_states, n_days_predict, verbose):
+    def __init__(self, company, day_start, day_end, n_days_previous, n_states, n_days_predict, verbose, n_decimals):
         self.company = company
         self.day_start = day_start
         self.day_end = day_end
@@ -18,6 +18,7 @@ class ModelHMM():
         self.n_days_predict = n_days_predict
         self.verbose = verbose
         self.print_model = verbose
+        self.n_decimals = n_decimals
 
     def _get_value_by_positions(self, df, start_index, end_index):
         X = df.ix[start_index:end_index]
@@ -83,17 +84,18 @@ class ModelHMM():
         max_day_predicted = n_previous
         for day in range(n_previous, n_days, n_days_predict):
             max_day_predicted = max(max_day_predicted, day)
-            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=100, verbose=False,
+            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=5, verbose=False,
                                 init_params='mtsc')
             X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, day - n_previous, day)
 
             temp_model = model.fit(X)
 
             if (self.print_model == True):
+                np.set_printoptions(precision=self.n_decimals)
                 print "Transform matrix : "
-                print temp_model.transmat_
+                print np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
                 print "Starting probability : "
-                print temp_model.startprob_
+                print np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
                 self.print_model = False
 
             last_close = v_close_v[day]
@@ -119,6 +121,6 @@ start_time = time.time()
 day_start = datetime.datetime(2016, 1, 1)
 day_end = pd.datetime.today()
 
-model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10,
-                 n_days_predict=2, verbose=True)
+model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=20,
+                 n_days_predict=2, verbose=True, n_decimals = 3)
 model.predict()

@@ -9,7 +9,7 @@ import time
 
 
 class ModelHMM():
-    def __init__(self, company, day_start, day_end, n_days_previous, n_states, verbose):
+    def __init__(self, company, day_start, day_end, n_days_previous, n_states, verbose, n_decimals):
         self.company = company
         self.day_start = day_start
         self.day_end = day_end
@@ -17,6 +17,7 @@ class ModelHMM():
         self.n_states = n_states
         self.verbose = verbose
         self.print_model = verbose
+        self.n_decimals = n_decimals
 
     def _get_value_by_positions(self, df, start_index, end_index):
         X = df.ix[start_index:end_index]
@@ -99,10 +100,11 @@ class ModelHMM():
                 temp_model = model.fit(X)
 
                 if (self.print_model == True):
+                    np.set_printoptions(precision=self.n_decimals)
                     print "Transform matrix : "
-                    print temp_model.transmat_
+                    print np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
                     print "Starting probability : "
-                    print temp_model.startprob_
+                    print np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
                     self.print_model = False
 
                 X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
@@ -124,5 +126,5 @@ start_time = time.time()
 day_start = datetime.datetime(2016, 1, 1)
 day_end = pd.datetime.today()
 
-model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10, verbose=True)
+model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10, verbose=True, n_decimals = 3)
 model.predict()
