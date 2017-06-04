@@ -85,7 +85,7 @@ class ModelHMM():
         max_day_predicted = n_previous
         for day in range(n_previous, n_days, n_days_predict):
             max_day_predicted = max(max_day_predicted, day)
-            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=5, verbose=False,
+            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=2, verbose=False,
                                 init_params='mtsc')
             X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, day - n_previous, day)
 
