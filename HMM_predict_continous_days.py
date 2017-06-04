@@ -9,7 +9,7 @@ import time
 
 
 class ModelHMM():
-    def __init__(self, company, day_start, day_end, n_days_previous, n_states, n_days_predict, verbose, n_decimals):
+    def __init__(self, company, day_start, day_end, n_days_previous, n_states, n_days_predict, verbose, n_decimals, latex):
         self.company = company
         self.day_start = day_start
         self.day_end = day_end
@@ -19,6 +19,7 @@ class ModelHMM():
         self.verbose = verbose
         self.print_model = verbose
         self.n_decimals = n_decimals
+        self.latex = latex
 
     def _get_value_by_positions(self, df, start_index, end_index):
         X = df.ix[start_index:end_index]
@@ -92,10 +93,25 @@ class ModelHMM():
 
             if (self.print_model == True):
                 np.set_printoptions(precision=self.n_decimals)
-                print "Transform matrix : "
-                print np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
-                print "Starting probability : "
-                print np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
+                if (self.latex == False):
+                    print "Transform matrix : "
+                    print np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
+                    print "Starting probability : "
+                    print np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
+                else:
+                    print "Transform matrix : "
+                    temp_mat = np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
+
+                    print "\hline"
+                    for xxx in temp_mat:
+                        print " & ".join([str(x) for x in xxx]), " \\\\"
+                        print "\hline"
+
+                    print "Starting probability : "
+                    temp_mat = np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
+                    print "\hline"
+                    print " & ".join([str(x) for x in temp_mat]), " \\\\"
+                    print "\hline"
                 self.print_model = False
 
             last_close = v_close_v[day]
@@ -121,6 +137,6 @@ start_time = time.time()
 day_start = datetime.datetime(2016, 1, 1)
 day_end = pd.datetime.today()
 
-model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=20,
-                 n_days_predict=2, verbose=True, n_decimals = 3)
+model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10,
+                 n_days_predict=2, verbose=True, n_decimals = 3, latex = False)
 model.predict()

@@ -9,7 +9,7 @@ import time
 
 
 class ModelHMM():
-    def __init__(self, company, day_start, day_end, n_days_previous, n_states, verbose, n_decimals):
+    def __init__(self, company, day_start, day_end, n_days_previous, n_states, verbose, n_decimals, latex):
         self.company = company
         self.day_start = day_start
         self.day_end = day_end
@@ -18,6 +18,7 @@ class ModelHMM():
         self.verbose = verbose
         self.print_model = verbose
         self.n_decimals = n_decimals
+        self.latex = latex
 
     def _get_value_by_positions(self, df, start_index, end_index):
         X = df.ix[start_index:end_index]
@@ -90,31 +91,46 @@ class ModelHMM():
         counting_error = 0
 
         for i in range(n_previous, n_days):
-            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=5, verbose=False,
-                                init_params='mtsc')
+            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=2, verbose=False,
+                                init_params='mstc')
             X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i - n_previous, i)
             if (self.verbose == True):
                 print "Predicting in", i - n_previous + 1, "th/", n_days - n_previous + 1, "days..."
 
-            try:
-                temp_model = model.fit(X)
+            # try:
+            temp_model = model.fit(X)
 
-                if (self.print_model == True):
-                    np.set_printoptions(precision=self.n_decimals)
+            if (self.print_model == True):
+                np.set_printoptions(precision=self.n_decimals)
+                if (self.latex == False):
                     print "Transform matrix : "
                     print np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
                     print "Starting probability : "
                     print np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
-                    self.print_model = False
+                else:
+                    print "Transform matrix : "
+                    temp_mat = np.around(np.array(temp_model.transmat_), decimals=self.n_decimals)
 
-                X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
-                hidden_states = temp_model.predict(X)
-                predicted.append(temp_model.means_[hidden_states[0]][0] * open_v[0] + open_v[0])
-            except:
-                counting_error += 1
-                print(counting_error)
-                X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
-                predicted.append(open_v[0])
+                    print "\hline"
+                    for xxx in temp_mat:
+                        print " & ".join([str(x) for x in xxx]), " \\\\"
+                        print "\hline"
+
+                    print "Starting probability : "
+                    temp_mat = np.around(np.array(temp_model.startprob_), decimals=self.n_decimals)
+                    print "\hline"
+                    print " & ".join([str(x) for x in temp_mat]), " \\\\"
+                    print "\hline"
+                self.print_model = False
+
+            X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
+            hidden_states = temp_model.predict(X)
+            predicted.append(temp_model.means_[hidden_states[0]][0] * open_v[0] + open_v[0])
+            # except:
+            #     counting_error += 1
+            #     print(counting_error)
+            #     X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
+            #     predicted.append(open_v[0])
 
         print "Finished predicting", n_days - n_previous + 1, "days in ", time.time() - start_time, " s"
         error = self._show_plot(v_dates[n_previous:], v_close_v[n_previous:], predicted, 'Trained data')
@@ -126,5 +142,5 @@ start_time = time.time()
 day_start = datetime.datetime(2016, 1, 1)
 day_end = pd.datetime.today()
 
-model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10, verbose=True, n_decimals = 3)
+model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10, verbose=True, n_decimals = 3, latex = True)
 model.predict()
