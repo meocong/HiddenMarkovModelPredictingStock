@@ -17,6 +17,7 @@ class ModelHMM():
         self.n_states = n_states
         self.n_days_predict = n_days_predict
         self.verbose = verbose
+        self.print_model = verbose
 
     def _get_value_by_positions(self, df, start_index, end_index):
         X = df.ix[start_index:end_index]
@@ -87,6 +88,13 @@ class ModelHMM():
             X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, day - n_previous, day)
 
             temp_model = model.fit(X)
+
+            if (self.print_model == True):
+                print "Transform matrix : "
+                print temp_model.transmat_
+                print "Starting probability : "
+                print temp_model.startprob_
+                self.print_model = False
 
             last_close = v_close_v[day]
             last_open = v_open_v[day]

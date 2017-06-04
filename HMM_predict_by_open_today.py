@@ -16,6 +16,7 @@ class ModelHMM():
         self.n_days_previous = n_days_previous
         self.n_states = n_states
         self.verbose = verbose
+        self.print_model = verbose
 
     def _get_value_by_positions(self, df, start_index, end_index):
         X = df.ix[start_index:end_index]
@@ -36,8 +37,8 @@ class ModelHMM():
 
         if (abs(start_index - end_index) == 1):
             l_X, l_dates, l_close_v, l_volume_v, l_high_v, l_open_v, l_low_v = self._get_value_by_positions(df,
-                                                                                                      start_index - 1,
-                                                                                                      end_index + 1)
+                                                                                                            start_index - 1,
+                                                                                                            end_index + 1)
             # Truong hop can predict => khong duoc su dung close_v => thay bang uoc luong khac
             return np.column_stack([(open_v - [l_close_v[0]]) / l_close_v[0], (high_v - open_v) / open_v,
                                     (low_v - open_v) / open_v]), dates, close_v, volume_v, high_v, open_v, low_v
@@ -88,7 +89,7 @@ class ModelHMM():
         counting_error = 0
 
         for i in range(n_previous, n_days):
-            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=100, verbose=False,
+            model = GaussianHMM(n_components=n_cluster, covariance_type="diag", n_iter=5, verbose=False,
                                 init_params='mtsc')
             X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i - n_previous, i)
             if (self.verbose == True):
@@ -96,12 +97,20 @@ class ModelHMM():
 
             try:
                 temp_model = model.fit(X)
+
+                if (self.print_model == True):
+                    print "Transform matrix : "
+                    print temp_model.transmat_
+                    print "Starting probability : "
+                    print temp_model.startprob_
+                    self.print_model = False
+
                 X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
                 hidden_states = temp_model.predict(X)
                 predicted.append(temp_model.means_[hidden_states[0]][0] * open_v[0] + open_v[0])
             except:
                 counting_error += 1
-                # print(counting_error)
+                print(counting_error)
                 X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
                 predicted.append(open_v[0])
 
