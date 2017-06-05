@@ -125,7 +125,7 @@ class ModelHMM():
 
             X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
             hidden_states = temp_model.predict(X)
-            predicted.append(temp_model.means_[hidden_states[0]][0] * open_v[0] + open_v[0])
+            predicted.append(temp_model.means_[hidden_states[0]][0]/10 * open_v[0] + open_v[0])
             # except:
             #     counting_error += 1
             #     print(counting_error)
@@ -144,5 +144,5 @@ start_time = time.time()
 day_start = datetime.datetime(2016, 1, 1)
 day_end = pd.datetime.today()
 
-model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=5, verbose=True, n_decimals = 3, latex = True)
+model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=200, n_states=10, verbose=True, n_decimals = 3, latex = True)
 model.predict()
