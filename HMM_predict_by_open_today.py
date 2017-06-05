@@ -132,7 +132,9 @@ class ModelHMM():
             #     X, dates, close_v, volume_v, high_v, open_v, low_v = self._get_value_by_positions(df, i, i + 1)
             #     predicted.append(open_v[0])
 
-        print "Finished predicting", n_days - n_previous + 1, "days in ", time.time() - start_time, " s"
+        final_time = time.time() - start_time
+        print "Finished predicting", n_days - n_previous + 1, "days in ", final_time, " s"
+        print "Predicting time each day: ", final_time/(n_days - n_previous + 1), " s"
         error = self._show_plot(v_dates[n_previous:], v_close_v[n_previous:], predicted, 'Trained data')
         print "Mean absolute percentage error MAPE = ", error, '%'
 
@@ -142,5 +144,5 @@ start_time = time.time()
 day_start = datetime.datetime(2016, 1, 1)
 day_end = pd.datetime.today()
 
-model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=10, verbose=True, n_decimals = 3, latex = True)
+model = ModelHMM(company="AAPL", day_start=day_start, day_end=day_end, n_days_previous=100, n_states=5, verbose=True, n_decimals = 3, latex = True)
 model.predict()

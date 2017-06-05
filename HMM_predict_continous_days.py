@@ -126,7 +126,9 @@ class ModelHMM():
                 last_close = predicted[-1]
                 max_day_predicted = max(max_day_predicted, i)
 
-        print "Finished predicting", n_days - n_previous + 1, "days in ", time.time() - start_time, " s"
+        final_time = time.time() - start_time
+        print "Finished predicting", n_days - n_previous + 1, "days in ", final_time, " s"
+        print "Predicting time each day: ", final_time / (n_days - n_previous + 1), " s"
         error = self._show_plot(v_dates[n_previous:max_day_predicted + 1], v_close_v[n_previous:max_day_predicted + 1],
                                 predicted, 'Trained data')
         print "Mean absolute percentage error MAPE = ", error, '%'
